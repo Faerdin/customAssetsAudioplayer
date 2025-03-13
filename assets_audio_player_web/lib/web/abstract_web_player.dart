@@ -38,7 +38,7 @@ abstract class WebPlayer {
 
   void stop();
 
-  String findAssetPath(String path, String audioType) {
+  String findAssetPath(String path, String audioType, {String? package}) {
     if (audioType == 'network' ||
         audioType == 'liveStream' ||
         audioType == 'file') {
@@ -52,6 +52,9 @@ abstract class WebPlayer {
     if (path.startsWith('/')) {
       path = path.replaceFirst('/', '');
     }
+    if (package != null) {
+      path = 'packages/$package/' + path;
+    }
     path = (window.location.href.replaceAll('/#/', '') + '/assets/' + path);
     return path;
   }
@@ -64,6 +67,7 @@ abstract class WebPlayer {
     double? seek,
     double? playSpeed,
     Map? networkHeaders,
+    String? package,
   });
 
   void seek({double to});

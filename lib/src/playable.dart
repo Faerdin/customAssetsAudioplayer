@@ -1,5 +1,6 @@
+// ignore_for_file: unused_element
 import 'dart:convert';
-import 'dart:typed_data';
+//import 'dart:typed_data'; Eirik 18.09.24: Not in org. ver. 3.1.1
 
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/foundation.dart';
@@ -224,8 +225,8 @@ class Audio extends Playable {
     required this.audioType,
     this.package,
     this.cached,
+    this.pitch, //Eirik 18.09.24: Added based on latest org. ver. 3.1.1
     this.playSpeed,
-    this.pitch,
     Map<String, String>? headers,
     Metas? metas,
     this.drmConfiguration

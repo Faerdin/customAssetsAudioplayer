@@ -1,3 +1,72 @@
+## 3.1.1
+
+- fix startup crash issue for some Android devices.
+
+## 3.1.0
+
+- revert back changes
+
+## 3.0.9
+
+- fix notification package naming and build issue
+
+## 3.0.8
+
+- fix warnings
+
+## 3.0.7
+
+- Update dependencies and fix notification issue
+
+## 3.0.6
+
+- Update kotling version and fix minor issues
+
+## 3.0.5
+
+- Breaking change, with Flutter 3.0 removed null aware for WidgetsBinding
+
+## 3.0.4+5
+
+- Fixed null aware
+
+## 3.0.4+4
+
+- Fix issues and update exoplayer
+
+## 3.0.4+3
+
+- Fix warnings and abstract issue
+
+## 3.0.4+2
+
+- Fix flutter 3.0 issues
+
+## 3.0.4+1
+
+- Fix andorid 12 issues and update exoplayer and gradles
+
+## 3.0.4
+
+- Fix web open player issue
+- update example app Android 12 compatable
+
+## 3.0.3+9
+
+- Fix mimType issue mp3 files from urls without extension #630
+- Fix web Null issue
+
+## 3.0.3+8
+
+- Fix android 12 / api 31 issue.
+- Fix macOs build issue
+- Fix web assets issue for Web
+
+## 3.0.3+7
+
+- Fix android 12 / api 31 issue.
+- Fix macOs build issue
+- Fix web assets issue for Web
 ## 3.0.3+6
 * Added DRM supports
 * Fix playSpeed for WEB.

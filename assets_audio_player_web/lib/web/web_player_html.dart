@@ -124,6 +124,7 @@ class WebPlayerHtml extends WebPlayer {
   Future<void> open({
     required String path,
     required String audioType,
+    String? package,
     bool autoStart = false,
     double volume = 1,
     double? seek,
@@ -133,7 +134,11 @@ class WebPlayerHtml extends WebPlayer {
     stop();
     _durationMs = null;
     _position = null;
-    _audioElement = html.AudioElement(findAssetPath(path, audioType));
+    _audioElement = html.AudioElement(findAssetPath(
+      path,
+      audioType,
+      package: package,
+    ));
 
     // it seems html audielement cannot take networkHeaders :'(
 

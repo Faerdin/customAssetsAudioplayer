@@ -1,23 +1,24 @@
 group 'com.github.florent37.assets_audio_player_web'
 version '1.0-SNAPSHOT'
 
-buildscript {
-    ext.kotlin_version = '1.3.50'
-    repositories {
-        google()
-        jcenter()
-    }
+//Eirik 14.08.24: buildscript block removed as recommended, see https://flutter.dev/go/flutter-gradle-plugin-apply
+//buildscript {
+//    ext.kotlin_version = '1.3.50'
+//    repositories {
+//        google()
+//        jcenter()
+//    }
 
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.0'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
+//    dependencies {
+//        classpath 'com.android.tools.build:gradle:3.5.0'
+//        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+//    }
+//}
 
 rootProject.allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 }
 
@@ -25,8 +26,16 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 28
-
+    compileSdkVersion 34 // Eirik 10.09.24: Changed from 28
+/*
+    compileOptions { //Eirik 10.09.24: Try to force Java 1.8
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    } */
+    compileOptions { //Eirik 10.09.24: Try to force Java 17(?)
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
@@ -36,9 +45,13 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
+    //Eirik 13.09.24: Added
+    kotlinOptions {
+        jvmTarget = '17'
+    }
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation "androidx.annotation:annotation:1.1.0"
+    //implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version" //Eirik 10.09.24: Testing TODO!  removing this
+    implementation "androidx.annotation:annotation:1.8.2" // Eirik 10.09.24: Changed from 1.1.0
 }

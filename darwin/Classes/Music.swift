@@ -214,6 +214,10 @@ public class Player : NSObject, AVAudioPlayerDelegate {
         self.channel.invokeMethod(Music.METHOD_PLAY_OR_PAUSE, arguments: [])
     }
     
+    func invokeListenerStop(){
+        self.channel.invokeMethod(Music.METHOD_CURRENT, arguments: nil)
+    }
+    
     func setupMediaPlayerNotificationView(notificationSettings: NotificationSettings, audioMetas: AudioMetas, isPlaying: Bool) {
         self.notificationSettings = notificationSettings
         self.audioMetas = audioMetas
@@ -539,7 +543,7 @@ public class Player : NSObject, AVAudioPlayerDelegate {
             if networkHeaders != nil && networkHeaders!.count > 0 {
                 let asset = AVURLAsset(url: url, options: [
                     "AVURLAssetHTTPHeaderFieldsKey": networkHeaders!,
-                    "AVURLAssetOutOfBandMIMETypeKey": "mp3"
+                    "AVURLAssetOutOfBandMIMETypeKey": "mp3" //Eirik 18.09.24: TODO! Latest org. 3.1.1 use "audio\mpeg"?
                 ])
                 item = SlowMoPlayerItem(asset: asset)
             } else {
@@ -818,11 +822,13 @@ public class Player : NSObject, AVAudioPlayerDelegate {
     func stop(){
         self.player?.pause()
         self.player?.rate = 0.0
-        
+        self.playing = false
+
+        self.invokeListenersStop() //Eirik 18.09.24: TODO! This is a new line from 3.1.1. Check relevance!        
         self.updateNotifStatus(playing: self.playing, stopped: true, rate: self.player?.rate)
         
         self.player?.seek(to: CMTime.zero)
-        self.playing = false
+        
         self.currentTimeTimer?.invalidate()
         #if os(iOS)
         self._deinit()
@@ -839,7 +845,7 @@ public class Player : NSObject, AVAudioPlayerDelegate {
     }
     
     func play(){
-        if #available(iOS 10.0, *) {
+        if #available(iOS 10.0, macOS10.12, *) { //Eirik 18.09.24: Aligned with org. version 3.1.1
             self.player?.playImmediately(atRate: self.rate)
         } else {
             self.player?.play()
@@ -938,6 +944,7 @@ public class Player : NSObject, AVAudioPlayerDelegate {
             self.player?.play()
         } else {
             playing = false
+//Eirik 18.09.24: The following lines are not in the org. ver. 3.1.1. Check. TODO!            
             do {
 
 try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)

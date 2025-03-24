@@ -1,8 +1,8 @@
 name: assets_audio_player
 description: Play music/audio stored in assets files directly from Flutter & Network, Radio, LiveStream, Local files. Compatible with Android, iOS, web and macOS.
-version: 3.1.1
+version: 4.0.0
 
-#author: Florent Champigny <champigny.florent@gmail.com>
+author: Florent Champigny <champigny.florent@gmail.com>
 homepage: https://github.com/florent37/Flutter-AssetsAudioPlayer
 
 environment:
@@ -31,16 +31,16 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^2.0.2
 
-#flutter:
-#  plugin:
-    #    platforms:
-    #      android:
-    #        package: com.github.florent37.assets_audio_player
+flutter:
+  plugin:
+        platforms:
+          android:
+            package: com.github.florent37.assets_audio_player
     #        #package: .\assets_audio_player
-    #        pluginClass: AssetsAudioPlayerPlugin
+            pluginClass: AssetsAudioPlayerPlugin
     #        mainClass: AssetsAudioPlayerPlugin
-    #      ios:
-    #        pluginClass: AssetsAudioPlayerPlugin
+          ios:
+            pluginClass: AssetsAudioPlayerPlugin
     #      macos:
     #        pluginClass: AssetsAudioPlayerPlugin
 #      web:

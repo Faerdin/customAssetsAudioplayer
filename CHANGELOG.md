@@ -1,3 +1,84 @@
+## 4.0.0
+Release Date: 2025.03.20
+
+Summary
+This release brings significant updates to the assets_audio_player library, modernizing its codebase
+and transitioning it to use the androidx.media3 (formerly ExoPlayer) library.
+These changes improve the library's long-term maintainability and compatibility with modern Android
+development practices.
+
+Major Changes
+Migration to androidx.media3:
+The core audio playback engine has been completely migrated from the older com.google.android.exoplayer2
+package to the new androidx.media3 library. This ensures compatibility with the latest Android releases
+and benefits from ongoing improvements from Google.
+- All code related to ExoPlayer has been updated to use the androidx.media3 APIs.
+- Removed: The old code that was using com.google.android.exoplayer2 has been removed.
+- Removed: The old code that was using AudioListener has been removed.
+- New listener: The androidx.media3.common.Player.Listener is now used instead of the old
+  com.google.android.exoplayer2.Player.EventListener.
+- New functions: The onPlayerError and onPlayerStateChanged are now onPlayerError(error: PlaybackException)
+  and onPlaybackStateChanged(playbackState: Int).
+- New way to obtain the audio session id: The old AudioListener has been replaced.
+  The mediaPlayer.audioSessionId is now used. If there is no id, a listener is now added to wait for it.
+- Corrected: The code now verifies the null when necessary.
+
+Kotlin Modernization:
+The codebase has been extensively reviewed and updated to use modern Kotlin best practices, including:
+- Improved null safety using the safe call operator (?.) and the Elvis operator (?:).
+- Enhanced use of Kotlin's type system.
+- Removed: The old unused code has been removed.
+
+Error Handling
+- Improved error handling, especially related to obtaining the audio session ID when it is not
+immediately available. The audio session ID is now obtained through a correct Player.Listener.
+
+Gradle Modernization
+- The Gradle build system has been updated to follow modern practices.
+- The Crashlytics plugin is now correctly applied using the declarative plugins{} block.
+- Plugin dependencies are now correctly managed in settings.gradle.kts using the pluginManagement block.
+- The correct plugin repository, gradlePluginPortal() is now used.
+- Unnecessary version numbers for the plugin are removed.
+- The version of each plugin is correct.
+- The Kotlin plugin is correctly used.
+- Correct usage of apply false.
+- Correct scope of each plugin.
+
+Crashlytics:
+- The Crashlytics plugin is now working correctly.
+- It is now possible to test Crashlytics.
+
+Other changes:
+- Updated the code of HeadsetManager to be null safe.
+- Misc code improvements.
+
+Impact
+- Compatibility: The library is now compatible with the latest versions of Android and the androidx.media3 library.
+- Maintainability: The codebase is more robust, easier to understand, and easier to maintain.
+- Reliability: The library is more reliable due to improved error handling.
+- Modernization: The library now uses the latest Kotlin and Gradle features.
+
+Breaking Changes
+- androidx.media3 Dependency: Users of the library will need to add the androidx.media3 dependency to their projects.
+- Listener Changes: Code that previously used the old com.google.android.exoplayer2.Player.EventListener will need to be updated to use the new androidx.media3.common.Player.Listener.
+- Removed: The old listener AudioListener is no longer available.
+- Get session Id: The getSessionId now works differently.
+
+Upgrade Instructions
+- Update to this version of the assets_audio_player library.
+- Add the androidx.media3 dependency.
+- Update all listeners from com.google.android.exoplayer2.Player.EventListener to androidx.media3.common.Player.Listener.
+- Remove all calls to AudioListener.
+- Update getSessionId usage.
+
+Contributors
+- EirikFaerdin (https://github.com/EirikFaerdin): for driving the modernization efforts
+- Google Gemini - for assistance
+
+Future Plans
+- Further testing and bug fixes.
+- Potential addition of new features supported by androidx.media3.
+
 ## 3.1.1
 
 - fix startup crash issue for some Android devices.

@@ -1,4 +1,8 @@
 # customAssetsAudioplayer
+
+March 2025: Major updates, set to version 4.x. See CHANGELOG.md for changes!
+Updates by https://github.com/EirikFaerdin
+
 Copy of AssetsAudioplayer v. 3.1.1 with some custom changes for ducking and pausing other audio
 
 Difference from original: (For IOS)

@@ -18,7 +18,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.media.session.MediaButtonReceiver
 import com.github.florent37.assets_audio_player.R
-import com.google.android.exoplayer2.C
+//import com.google.android.exoplayer2.C
+import androidx.media3.common.C
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -157,36 +158,62 @@ class NotificationService : Service() {
         }
     }
 
+
     private fun getSmallIcon(context: Context): Int {
-        return getCustomIconOrDefault(context, manifestIcon, null, R.drawable.exo_icon_circular_play)
+        //return getCustomIconOrDefault(context, manifestIcon, null, R.drawable.exo_icon_circular_play)
+        //return getCustomIconOrDefault(context, manifestIcon, R.drawable.notification_icon)
+        return getCustomIconOrDefault(context, manifestIcon, context.resources.getIdentifier(
+            "exo_icon_small", "drawable", "androidx.media3.ui"), null)
     }
 
     private fun getPlayIcon(context: Context, resourceName: String?): Int {
-        return getCustomIconOrDefault(context, manifestIconPlay, resourceName, R.drawable.exo_icon_play)
+        //return getCustomIconOrDefault(context, manifestIconPlay, resourceName, R.drawable.exo_icon_play)
+        return getCustomIconOrDefault(context, manifestIconPlay, context.resources.getIdentifier(
+            "exo_icon_play", "drawable", "androidx.media3.ui"), resourceName)
     }
 
     private fun getPauseIcon(context: Context, resourceName: String?): Int {
-        return getCustomIconOrDefault(context, manifestIconPause, resourceName, R.drawable.exo_icon_pause)
+        //return getCustomIconOrDefault(context, manifestIconPause, resourceName, R.drawable.exo_icon_pause)
+        return getCustomIconOrDefault(context, manifestIconPause, context.resources.getIdentifier(
+            "exo_icon_pause", "drawable", "androidx.media3.ui"), resourceName)
     }
 
     private fun getNextIcon(context: Context, resourceName: String?): Int {
-        return getCustomIconOrDefault(context, manifestIconNext, resourceName, R.drawable.exo_icon_next)
+        //return getCustomIconOrDefault(context, manifestIconNext, resourceName, R.drawable.exo_icon_next)
+        return getCustomIconOrDefault(context, manifestIconNext, context.resources.getIdentifier(
+            "exo_icon_next", "drawable", "androidx.media3.ui"), resourceName)
     }
 
     private fun getPrevIcon(context: Context, resourceName: String?): Int {
-        return getCustomIconOrDefault(context, manifestIconPrev, resourceName, R.drawable.exo_icon_previous)
+        //return getCustomIconOrDefault(context, manifestIconPrev, resourceName, R.drawable.exo_icon_previous)
+        return getCustomIconOrDefault(context, manifestIconPrev, context.resources.getIdentifier(
+            "exo_icon_previous", "drawable", "androidx.media3.ui"), resourceName)
     }
 
     private fun getStopIcon(context: Context, resourceName: String?): Int {
-        return getCustomIconOrDefault(context, manifestIconStop, resourceName, R.drawable.exo_icon_stop)
+        //return getCustomIconOrDefault(context, manifestIconStop, resourceName, R.drawable.exo_icon_stop)
+        return getCustomIconOrDefault(context, manifestIconStop, context.resources.getIdentifier(
+            "exo_icon_stop", "drawable", "androidx.media3.ui"), resourceName)
     }
 
-    private fun getCustomIconOrDefault(context: Context, manifestName: String, resourceName: String?, defaultIcon: Int): Int {
+    //private fun getCustomIconOrDefault(context: Context, manifestName: String, resourceName: String?, defaultIcon: Int): Int {
+    private fun getCustomIconOrDefault(context: Context, manifestName: String, defaultIcon: Int, resourceName: String? = null): Int {
         try {
             // by resource name
-            val customIconFromName = getResourceID(resourceName)
+            //val customIconFromName = getResourceID(resourceName)
+/*            val customIconFromName = resourceName?.let {
+                //getResourceID(it)
+                getResourceID(context, it)
+            }
             if (customIconFromName != null) {
                 return customIconFromName
+            }*/
+            if (!resourceName.isNullOrEmpty()){
+                val customIconFromName = context.resources.getIdentifier(resourceName, "drawable", context.packageName)
+
+                if (customIconFromName != 0) {
+                    return customIconFromName
+                }
             }
 
             //by manifest
@@ -203,12 +230,18 @@ class NotificationService : Service() {
         return defaultIcon
     }
 
-    private fun getResourceID(iconName: String?): Int? {
-        return iconName?.let { name ->
-            resources.getIdentifier(name, "drawable", applicationContext.packageName)
+/* Eirik 20.03.25: Not needed anymore?
+    //private fun getResourceID(iconName: String?): Int? {
+    private fun getResourceID(context: Context, iconName: String): Int? {
+        //return iconName?.let { name ->
+        //    resources.getIdentifier(name, "drawable", applicationContext.packageName)
+        return if(iconName.isNotEmpty()) {
+            context.resources.getIdentifier(iconName, "drawable", context.packageName)
+        } else {
+            null
         }
     }
-
+*/
     private fun displayNotification(action: NotificationAction.Show, bitmap: Bitmap?) {
         createNotificationChannel()
         val mediaSession = MediaButtonsReceiver.getMediaSessionCompat(applicationContext)

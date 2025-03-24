@@ -8,6 +8,7 @@ import androidx.annotation.RequiresApi
 import com.github.florent37.assets_audio_player.AssetAudioPlayerThrowable
 import com.github.florent37.assets_audio_player.AssetsAudioPlayerPlugin
 import com.github.florent37.assets_audio_player.Player
+/* Eirik 20.03.25: Old libraries, replaced my androidx.media3
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.C.AUDIO_SESSION_ID_UNSET
 import com.google.android.exoplayer2.Player.REPEAT_MODE_ALL
@@ -22,6 +23,39 @@ import com.google.android.exoplayer2.source.dash.DashMediaSource
 import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource
 import com.google.android.exoplayer2.upstream.*
+ */
+//Eirik 20.03.25: The new androidx.media3 libraries, specified those to use instead of ".*"
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackParameters
+import androidx.media3.common.util.UnstableApi //Added to not have an error
+import androidx.media3.datasource.AssetDataSource
+import androidx.media3.datasource.DataSpec
+import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.DefaultDataSourceFactory
+import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.datasource.HttpDataSource
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.DefaultLoadControl
+import androidx.media3.exoplayer.ExoPlaybackException
+import androidx.media3.exoplayer.SimpleExoPlayer
+import androidx.media3.exoplayer.drm.DefaultDrmSessionManager
+import androidx.media3.exoplayer.drm.DrmSessionManager
+import androidx.media3.exoplayer.drm.FrameworkMediaDrm
+import androidx.media3.exoplayer.drm.LocalMediaDrmCallback
+import androidx.media3.exoplayer.source.ProgressiveMediaSource
+import androidx.media3.exoplayer.source.MediaSource
+import androidx.media3.exoplayer.dash.DashMediaSource
+import androidx.media3.exoplayer.hls.HlsMediaSource
+import androidx.media3.exoplayer.smoothstreaming.SsMediaSource
+import androidx.media3.extractor.DefaultExtractorsFactory
+import androidx.media3.extractor.ts.AdtsExtractor
+
+// Eirik 20.03.25: The constants
+import androidx.media3.common.C.AUDIO_SESSION_ID_UNSET
+import androidx.media3.common.Player.REPEAT_MODE_ALL
+import androidx.media3.common.Player.REPEAT_MODE_OFF
+
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import java.io.File
 import kotlin.coroutines.resume
@@ -158,7 +192,8 @@ class PlayerImplemExoPlayer(
                     PlayerImplemTesterExoPlayer.Type.DASH -> DashMediaSource.Factory(factory)
                     PlayerImplemTesterExoPlayer.Type.SmoothStreaming -> SsMediaSource.Factory(factory)
                     else -> ProgressiveMediaSource.Factory(factory, DefaultExtractorsFactory().setAdtsExtractorFlags(AdtsExtractor.FLAG_ENABLE_CONSTANT_BITRATE_SEEKING))
-                }.createMediaSource(uri)
+                //}.createMediaSource(uri)
+                }.createMediaSource(MediaItem.fromUri(uri))
             } else if (audioType == Player.AUDIO_TYPE_FILE) {
 
                 val factory = ProgressiveMediaSource
@@ -169,14 +204,17 @@ class PlayerImplemExoPlayer(
                     val key = drmConfiguration?.get("clearKey")?.toString()
 
                     if (key != null) {
-                        val sessionManager: DrmSessionManager = DefaultDrmSessionManager.Builder().setUuidAndExoMediaDrmProvider(C.CLEARKEY_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER).build(LocalMediaDrmCallback(key.toByteArray()))
-                        factory.setDrmSessionManager(sessionManager)
+                        val sessionManager: DrmSessionManager =
+                            DefaultDrmSessionManager.Builder().setUuidAndExoMediaDrmProvider(
+                            C.CLEARKEY_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER).build(LocalMediaDrmCallback(key.toByteArray()))
+                        //factory.setDrmSessionManager(sessionManager)
+                        factory.setDrmSessionManagerProvider { sessionManager }
                     }
 
                 }
 
-                return factory
-                        .createMediaSource(Uri.fromFile(File(assetAudioPath)))
+                //return factory.createMediaSource(Uri.fromFile(File(assetAudioPath)))
+                return factory.createMediaSource(MediaItem.fromUri(Uri.fromFile(File(assetAudioPath))))
             } else { //asset$
                 val p = assetAudioPath!!.replace(" ", "%20")
                 val path = if (assetAudioPackage.isNullOrBlank()) {
@@ -212,7 +250,8 @@ class PlayerImplemExoPlayer(
                     DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS,
                     DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS)
 
-            return this.setLoadControl(loadControlBuilder.createDefaultLoadControl())
+            //return this.setLoadControl(loadControlBuilder.createDefaultLoadControl())
+            return this.setLoadControl(loadControlBuilder.build())
         }
         return this
     }
@@ -263,9 +302,11 @@ class PlayerImplemExoPlayer(
 
             var lastState: Int? = null
 
-            this.mediaPlayer?.addListener(object : com.google.android.exoplayer2.Player.EventListener {
+            //this.mediaPlayer?.addListener(object : com.google.android.exoplayer2.Player.EventListener {
+            this.mediaPlayer?.addListener(object : androidx.media3.common.Player.Listener {
 
-                override fun onPlayerError(error: ExoPlaybackException) {
+                //override fun onPlayerError(error: ExoPlaybackException) {
+                override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
                     val errorMapped = mapError(error)
                     if (!onThisMediaReady) {
                         continuation.resumeWithException(errorMapped)
@@ -274,7 +315,8 @@ class PlayerImplemExoPlayer(
                     }
                 }
 
-                override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+                //override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+                override fun onPlaybackStateChanged(playbackState: Int) {
                     if (lastState != playbackState) {
                         when (playbackState) {
                             ExoPlayer.STATE_ENDED -> {
@@ -345,6 +387,7 @@ class PlayerImplemExoPlayer(
         }
     }
 
+    /* Eirik 20.03.25: Old implementation old type listener (com.google.android.exoplayer2 package)
     override fun getSessionId(listener: (Int) -> Unit) {
         val id = mediaPlayer?.audioComponent?.audioSessionId?.takeIf { it != AUDIO_SESSION_ID_UNSET }
         if (id != null) {
@@ -359,5 +402,25 @@ class PlayerImplemExoPlayer(
             mediaPlayer?.audioComponent?.addAudioListener(listener)
         }
         //return
+    }
+
+     */
+    //Eirik 20.03.25: Replacement using androidx.media3
+    override fun getSessionId(listener: (Int) -> Unit) {
+        val id = mediaPlayer?.audioSessionId?.takeIf { it != AUDIO_SESSION_ID_UNSET }
+        if (id != null) {
+            listener(id)
+        } else {
+            val playerListener = object : androidx.media3.common.Player.Listener {
+                override fun onAudioAttributesChanged(audioAttributes: androidx.media3.common.AudioAttributes) {
+                    val id = mediaPlayer?.audioSessionId
+                    if (id != null && id != AUDIO_SESSION_ID_UNSET) {
+                        listener(id)
+                        mediaPlayer?.removeListener(this)
+                    }
+                }
+            }
+            mediaPlayer?.addListener(playerListener)
+        }
     }
 }

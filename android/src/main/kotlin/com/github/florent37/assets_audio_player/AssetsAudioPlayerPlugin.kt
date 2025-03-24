@@ -7,6 +7,9 @@ import android.os.SystemClock
 import android.util.Log
 import android.view.KeyEvent
 import androidx.annotation.NonNull
+//Eirik 19.03.25: No UI un assets_audio_player, so no need for these libraries!
+//import androidx.compose.animation.core.copy
+//import androidx.compose.ui.graphics.vector.path
 import com.github.florent37.assets_audio_player.headset.HeadsetStrategy
 import com.github.florent37.assets_audio_player.notification.*
 import com.github.florent37.assets_audio_player.playerimplem.PlayerFinder
@@ -39,7 +42,8 @@ internal val METHOD_PLAY_OR_PAUSE = "player.playOrPause"
 internal val METHOD_NOTIFICATION_STOP = "player.stop"
 internal val METHOD_ERROR = "player.error"
 
-class AssetsAudioPlayerPlugin : FlutterPlugin, PluginRegistry.NewIntentListener, ActivityAware {
+//class AssetsAudioPlayerPlugin : FlutterPlugin, PluginRegistry.NewIntentListener, ActivityAware {
+class AssetsAudioPlayerPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
     var myActivity: Activity? = null
     var notificationChannel: MethodChannel? = null
@@ -77,6 +81,7 @@ class AssetsAudioPlayerPlugin : FlutterPlugin, PluginRegistry.NewIntentListener,
         return false
     }
 
+/* Old code
     override fun onNewIntent(intent: Intent?): Boolean {
         if (intent == null)
             return false
@@ -91,19 +96,36 @@ class AssetsAudioPlayerPlugin : FlutterPlugin, PluginRegistry.NewIntentListener,
         }
         return false
     }
+*/
+    private fun onNewIntent(intent: Intent): Boolean {
+            return sendNotificationPayloadMessage(intent) ?: false
+    }
 
     override fun onDetachedFromActivity() {
         myActivity = null
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-        binding.addOnNewIntentListener(this)
+        //binding.addOnNewIntentListener(this) Eirik 19.03.25: Old implementation
         myActivity = binding.activity
+        binding.addOnNewIntentListener { intent -> //Eirik 19.03.25: New implementation
+            onNewIntent(intent)
+            return@addOnNewIntentListener false
+        }
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        binding.addOnNewIntentListener(this)
+        //binding.addOnNewIntentListener(this) Eirik 19.03.25: Old implementation
         myActivity = binding.activity;
+        binding.addOnNewIntentListener { intent ->
+            onNewIntent(intent)
+            return@addOnNewIntentListener false
+        }
+    }
+
+    //Eirik 19.03.25: New - onMethodCall to handle all the methods called from flutter
+    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+        assetsAudioPlayer?.onMethodCall(call, result)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {

@@ -11,9 +11,14 @@ import android.graphics.Bitmap
 import android.media.MediaMetadata
 import android.os.Build
 import android.os.IBinder
+/* Eirik 02.04.25: Deprecated Android Support library, replaced by AndroidX equivlants
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.support.v4.media.session.PlaybackStateCompat.ACTION_SEEK_TO
+ */
+import androidx.media.MediaMetadataCompat
+import androidx.media.session.PlaybackStateCompat
+import androidx.media.session.PlaybackStateCompat.ACTION_SEEK_TO
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.media.session.MediaButtonReceiver

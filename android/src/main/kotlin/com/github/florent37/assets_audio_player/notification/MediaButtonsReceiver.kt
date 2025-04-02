@@ -3,10 +3,16 @@ package com.github.florent37.assets_audio_player.notification
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+/* Eirik 02.04.25: Deprecated Android Support library, replaced by AndroidX equivlants
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
 import android.support.v4.media.session.PlaybackStateCompat
+ */
+import androidX.media.session.MediaControllerCompat
+import androidX.media.session.MediaSessionCompat
+import androidX.media.session.MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
+import androidX.media.session.PlaybackStateCompat
 import android.view.KeyEvent
 
 class MediaButtonsReceiver(context: Context, private val onAction: (MediaButtonAction) -> Unit, private val onNotifSeek: (Long) -> Unit) {

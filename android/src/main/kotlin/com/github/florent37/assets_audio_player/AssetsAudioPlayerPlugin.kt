@@ -12,6 +12,7 @@ import androidx.annotation.NonNull
 //import androidx.compose.ui.graphics.vector.path
 import com.github.florent37.assets_audio_player.headset.HeadsetStrategy
 import com.github.florent37.assets_audio_player.notification.*
+//import com.github.florent37.assets_audio_player.notification.MediaButtonsReceiver
 import com.github.florent37.assets_audio_player.playerimplem.PlayerFinder
 import com.github.florent37.assets_audio_player.stopwhencall.AudioFocusStrategy
 import com.github.florent37.assets_audio_player.stopwhencall.HeadsetManager
@@ -192,6 +193,10 @@ class AssetsAudioPlayer(
     }
 
     private val players = mutableMapOf<String, Player>()
+
+    fun getPlayers(): Map<String, Player> {
+        return players
+    }
 
     fun getPlayer(id: String): Player? {
         return this.players[id]

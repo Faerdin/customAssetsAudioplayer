@@ -5,25 +5,10 @@ import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.core.net.toUri
 import com.github.florent37.assets_audio_player.AssetAudioPlayerThrowable
 import com.github.florent37.assets_audio_player.AssetsAudioPlayerPlugin
 import com.github.florent37.assets_audio_player.Player
-/* Eirik 20.03.25: Old libraries, replaced my androidx.media3
-import com.google.android.exoplayer2.*
-import com.google.android.exoplayer2.C.AUDIO_SESSION_ID_UNSET
-import com.google.android.exoplayer2.Player.REPEAT_MODE_ALL
-import com.google.android.exoplayer2.Player.REPEAT_MODE_OFF
-import com.google.android.exoplayer2.audio.AudioListener
-import com.google.android.exoplayer2.drm.*
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
-import com.google.android.exoplayer2.extractor.ts.AdtsExtractor
-import com.google.android.exoplayer2.source.MediaSource
-import com.google.android.exoplayer2.source.ProgressiveMediaSource
-import com.google.android.exoplayer2.source.dash.DashMediaSource
-import com.google.android.exoplayer2.source.hls.HlsMediaSource
-import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource
-import com.google.android.exoplayer2.upstream.*
- */
 //Eirik 20.03.25: The new androidx.media3 libraries, specified those to use instead of ".*"
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -36,6 +21,7 @@ import androidx.media3.datasource.DefaultDataSourceFactory
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.HttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.ExoPlayer.Builder
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.SimpleExoPlayer
@@ -66,7 +52,6 @@ class IncompatibleException(val audioType: String, val type: PlayerImplemTesterE
 
 class PlayerImplemTesterExoPlayer(private val type: Type) : PlayerImplemTester {
 
-
     enum class Type {
         Default,
         HLS,
@@ -74,13 +59,13 @@ class PlayerImplemTesterExoPlayer(private val type: Type) : PlayerImplemTester {
         SmoothStreaming
     }
 
-
     override suspend fun open(configuration: PlayerFinderConfiguration) : PlayerFinder.PlayerWithDuration {
         if(AssetsAudioPlayerPlugin.displayLogs) {
             Log.d("PlayerImplem", "trying to open with exoplayer($type)")
         }
         //some type are only for web
-        if(configuration.audioType != Player.AUDIO_TYPE_LIVESTREAM && configuration.audioType != Player.AUDIO_TYPE_LIVESTREAM){
+        //if(configuration.audioType != Player.AUDIO_TYPE_LIVESTREAM && configuration.audioType != Player.AUDIO_TYPE_LIVESTREAM){
+        if(configuration.audioType != Player.AUDIO_TYPE_NETWORK && configuration.audioType != Player.AUDIO_TYPE_LIVESTREAM){
             if(type == Type.HLS || type == Type.DASH || type == Type.SmoothStreaming) {
                 throw IncompatibleException(configuration.audioType, type)
             }
@@ -101,7 +86,7 @@ class PlayerImplemTesterExoPlayer(private val type: Type) : PlayerImplemTester {
         )
 
         try {
-            val durationMS = mediaPlayer?.open(
+            val durationMS = mediaPlayer.open( // Call open on the PlayerImplemExoPlayer instance
                     context = configuration.context,
                     assetAudioPath = configuration.assetAudioPath,
                     audioType = configuration.audioType,
@@ -111,14 +96,14 @@ class PlayerImplemTesterExoPlayer(private val type: Type) : PlayerImplemTester {
                     drmConfiguration = configuration.drmConfiguration
             )
             return PlayerFinder.PlayerWithDuration(
-                    player = mediaPlayer!!,
-                    duration = durationMS!!
+                    player = mediaPlayer, // Return the PlayerImplemExoPlayer instance
+                    duration = durationMS
             )
         } catch (t: Throwable) {
             if(AssetsAudioPlayerPlugin.displayLogs) {
                 Log.d("PlayerImplem", "failed to open with exoplayer($type)")
             }
-            mediaPlayer?.release()
+            mediaPlayer.release() // Call release on the PlayerImplemExoPlayer instance
             throw  t
         }
     }
@@ -135,31 +120,42 @@ class PlayerImplemExoPlayer(
         onError = onError
 ) {
 
-    private var mediaPlayer: ExoPlayer? = null
+    // Make the ExoPlayer instance public
+    var exoPlayerInstance: ExoPlayer? = null
+        private set // Allow assignment only within this class
+    //private var mediaPlayer: ExoPlayer? = null
 
     override var loopSingleAudio: Boolean
-        get() = mediaPlayer?.repeatMode == REPEAT_MODE_ALL
+        //get() = mediaPlayer?.repeatMode == REPEAT_MODE_ALL
+        get() = exoPlayerInstance?.repeatMode == REPEAT_MODE_ALL
         set(value) {
-            mediaPlayer?.repeatMode = if (value) REPEAT_MODE_ALL else REPEAT_MODE_OFF
+            //mediaPlayer?.repeatMode = if (value) REPEAT_MODE_ALL else REPEAT_MODE_OFF
+            exoPlayerInstance?.repeatMode = if (value) REPEAT_MODE_ALL else REPEAT_MODE_OFF
         }
 
     override val isPlaying: Boolean
-        get() = mediaPlayer?.isPlaying ?: false
+        //get() = mediaPlayer?.isPlaying ?: false
+        get() = exoPlayerInstance?.isPlaying ?: false
     override val currentPositionMs: Long
-        get() = mediaPlayer?.currentPosition ?: 0
+        //get() = mediaPlayer?.currentPosition ?: 0
+        get() = exoPlayerInstance?.currentPosition ?: 0
 
     override fun stop() {
-        mediaPlayer?.stop()
+        //mediaPlayer?.stop()
+        exoPlayerInstance?.stop()
     }
 
     override fun play() {
-        mediaPlayer?.playWhenReady = true
+        //mediaPlayer?.playWhenReady = true
+        exoPlayerInstance?.playWhenReady = true
     }
 
     override fun pause() {
-        mediaPlayer?.playWhenReady = false
+        //mediaPlayer?.playWhenReady = false
+        exoPlayerInstance?.playWhenReady = false
     }
 
+    @UnstableApi
     private fun getDataSource(context: Context,
                       flutterAssets: FlutterPlugin.FlutterAssets,
                       assetAudioPath: String?,
@@ -169,14 +165,28 @@ class PlayerImplemExoPlayer(
                       drmConfiguration: Map<*, *>?
     ): MediaSource {
         try {
-            mediaPlayer?.stop()
+            // Use exoPlayerInstance here as well
+            //mediaPlayer?.stop()
+            exoPlayerInstance?.stop()
             if (audioType == Player.AUDIO_TYPE_NETWORK || audioType == Player.AUDIO_TYPE_LIVESTREAM) {
                 val uri = Uri.parse(assetAudioPath)
                 val userAgent = "assets_audio_player"
 
                 val factory = DataSource.Factory {
                     val allowCrossProtocol = true
-                    val dataSource = DefaultHttpDataSource(userAgent, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, allowCrossProtocol, null)
+
+                    // Use DefaultHttpDataSource.Factory (Builder) instead of direct constructor
+                    //val dataSource = DefaultHttpDataSource(userAgent, DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, allowCrossProtocol, null)
+
+                    val dataSourceFactory = DefaultHttpDataSource.Factory()
+                        .setUserAgent(userAgent)
+                        .setAllowCrossProtocolRedirects(allowCrossProtocol)
+                        // You might need to set connect/read timeouts on the factory if needed
+                        // .setConnectTimeoutMs(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS)
+                        // .setReadTimeoutMs(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS)
+
+                    // Add headers using the setRequestProperty method on the created DataSource
+                    val dataSource = dataSourceFactory.createDataSource()
                     networkHeaders?.forEach {
                         it.key?.let { key ->
                             it.value?.let { value ->
@@ -184,7 +194,7 @@ class PlayerImplemExoPlayer(
                             }
                         }
                     }
-                    dataSource;
+                    dataSource
                 }
 
                 return when(type){
@@ -199,18 +209,17 @@ class PlayerImplemExoPlayer(
                 val factory = ProgressiveMediaSource
                         .Factory(DefaultDataSourceFactory(context, "assets_audio_player"), DefaultExtractorsFactory())
 
-
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                     val key = drmConfiguration?.get("clearKey")?.toString()
 
                     if (key != null) {
                         val sessionManager: DrmSessionManager =
                             DefaultDrmSessionManager.Builder().setUuidAndExoMediaDrmProvider(
+                            //C.CLEARKEY_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER).build(LocalMediaDrmCallback(key.toByteArray()))
                             C.CLEARKEY_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER).build(LocalMediaDrmCallback(key.toByteArray()))
                         //factory.setDrmSessionManager(sessionManager)
                         factory.setDrmSessionManagerProvider { sessionManager }
                     }
-
                 }
 
                 //return factory.createMediaSource(Uri.fromFile(File(assetAudioPath)))
@@ -223,7 +232,9 @@ class PlayerImplemExoPlayer(
                     flutterAssets.getAssetFilePathByName(p, assetAudioPackage)
                 }
                 val assetDataSource = AssetDataSource(context)
-                assetDataSource.open(DataSpec(Uri.fromFile(File(path))))
+                val fileUri = "file://$path".toUri()
+                assetDataSource.open(DataSpec(fileUri))
+                //assetDataSource.open(DataSpec(Uri.fromFile(File(path))))
 
                 val factory = DataSource.Factory { assetDataSource }
                 return ProgressiveMediaSource
@@ -235,7 +246,9 @@ class PlayerImplemExoPlayer(
         }
     }
 
-    private fun SimpleExoPlayer.Builder.incrementBufferSize(audioType: String): SimpleExoPlayer.Builder {
+    //private fun SimpleExoPlayer.Builder.incrementBufferSize(audioType: String): SimpleExoPlayer.Builder {
+    @UnstableApi
+    private fun ExoPlayer.Builder.incrementBufferSize(audioType: String): ExoPlayer.Builder {
         if (audioType == Player.AUDIO_TYPE_NETWORK || audioType == Player.AUDIO_TYPE_LIVESTREAM) {
             /* Instantiate a DefaultLoadControl.Builder. */
             val loadControlBuilder = DefaultLoadControl.Builder()
@@ -274,6 +287,7 @@ class PlayerImplemExoPlayer(
         }
     }
 
+    @UnstableApi
     override suspend fun open(
             context: Context,
             flutterAssets: FlutterPlugin.FlutterAssets,
@@ -286,9 +300,15 @@ class PlayerImplemExoPlayer(
         var onThisMediaReady = false
 
         try {
-            mediaPlayer = SimpleExoPlayer.Builder(context)
-                    .incrementBufferSize(audioType)
-                    .build()
+            // Use the public exoPlayerInstance property
+            //exoPlayerInstance = SimpleExoPlayer.Builder(context)
+            exoPlayerInstance = ExoPlayer.Builder(context)
+                .incrementBufferSize(audioType)
+                .build()
+
+            //mediaPlayer = SimpleExoPlayer.Builder(context)
+            //        .incrementBufferSize(audioType)
+            //        .build()
 
             val mediaSource = getDataSource(
                     context = context,
@@ -302,10 +322,10 @@ class PlayerImplemExoPlayer(
 
             var lastState: Int? = null
 
-            //this.mediaPlayer?.addListener(object : com.google.android.exoplayer2.Player.EventListener {
-            this.mediaPlayer?.addListener(object : androidx.media3.common.Player.Listener {
+            // Use the public exoPlayerInstance property for adding listeners
+            //this.mediaPlayer?.addListener(object : androidx.media3.common.Player.Listener {
+            this.exoPlayerInstance?.addListener(object : androidx.media3.common.Player.Listener {
 
-                //override fun onPlayerError(error: ExoPlaybackException) {
                 override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
                     val errorMapped = mapError(error)
                     if (!onThisMediaReady) {
@@ -315,7 +335,6 @@ class PlayerImplemExoPlayer(
                     }
                 }
 
-                //override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
                 override fun onPlaybackStateChanged(playbackState: Int) {
                     if (lastState != playbackState) {
                         when (playbackState) {
@@ -335,7 +354,8 @@ class PlayerImplemExoPlayer(
                                     if (audioType == Player.AUDIO_TYPE_LIVESTREAM) {
                                         continuation.resume(0) //no duration for livestream
                                     } else {
-                                        val duration = mediaPlayer?.duration ?: 0
+                                        //val duration = mediaPlayer?.duration ?: 0
+                                        val duration = exoPlayerInstance?.duration ?: 0 // Use exoPlayerInstance
                                         val totalDurationMs = (duration.toLong())
 
                                         continuation.resume(totalDurationMs)
@@ -350,7 +370,9 @@ class PlayerImplemExoPlayer(
                 }
             })
 
-            mediaPlayer?.prepare(mediaSource)
+            // Use the public exoPlayerInstance property for preparing
+            //mediaPlayer?.prepare(mediaSource)
+            exoPlayerInstance?.prepare(mediaSource)
         } catch (error: Throwable) {
             if (!onThisMediaReady) {
                 continuation.resumeWithException(error)
@@ -362,65 +384,60 @@ class PlayerImplemExoPlayer(
     }
 
     override fun release() {
-        mediaPlayer?.release()
+        //mediaPlayer?.release()
+        exoPlayerInstance?.release()
+        exoPlayerInstance = null // Set to null after releasing
     }
 
     override fun seekTo(to: Long) {
-        mediaPlayer?.seekTo(to)
+        //mediaPlayer?.seekTo(to)
+        exoPlayerInstance?.seekTo(to) // Use exoPlayerInstance
     }
 
     override fun setVolume(volume: Float) {
-        mediaPlayer?.audioComponent?.volume = volume
+        //mediaPlayer?.audioComponent?.volume = volume
+        exoPlayerInstance?.volume = volume // Use exoPlayerInstance
     }
 
     override fun setPlaySpeed(playSpeed: Float) {
-        val params: PlaybackParameters? = mediaPlayer?.getPlaybackParameters()
+        //val params: PlaybackParameters? = mediaPlayer?.getPlaybackParameters()
+        val params: PlaybackParameters? = exoPlayerInstance?.getPlaybackParameters() // Use exoPlayerInstance
         if (params != null) {
-            mediaPlayer?.setPlaybackParameters(PlaybackParameters(playSpeed, params.pitch))
+            //mediaPlayer?.setPlaybackParameters(PlaybackParameters(playSpeed, params.pitch))
+            exoPlayerInstance?.setPlaybackParameters(PlaybackParameters(playSpeed, params.pitch)) // Use exoPlayerInstance
         }
     }
 
     override fun setPitch(pitch: Float) {
-        val params: PlaybackParameters? = mediaPlayer?.getPlaybackParameters()
+        //val params: PlaybackParameters? = mediaPlayer?.getPlaybackParameters()
+        val params: PlaybackParameters? = exoPlayerInstance?.getPlaybackParameters() // Use exoPlayerInstance
         if (params != null) {
-            mediaPlayer?.setPlaybackParameters(PlaybackParameters(params.speed, pitch))
+            //mediaPlayer?.setPlaybackParameters(PlaybackParameters(params.speed, pitch))
+            exoPlayerInstance?.setPlaybackParameters(PlaybackParameters(params.speed, pitch)) // Use exoPlayerInstance
         }
     }
 
-    /* Eirik 20.03.25: Old implementation old type listener (com.google.android.exoplayer2 package)
-    override fun getSessionId(listener: (Int) -> Unit) {
-        val id = mediaPlayer?.audioComponent?.audioSessionId?.takeIf { it != AUDIO_SESSION_ID_UNSET }
-        if (id != null) {
-            listener(id)
-        } else {
-            val listener = object : AudioListener {
-                override fun onAudioSessionIdChanged(audioSessionId: Int) {
-                    listener(audioSessionId)
-                    mediaPlayer?.audioComponent?.removeAudioListener(this)
-                }
-            }
-            mediaPlayer?.audioComponent?.addAudioListener(listener)
-        }
-        //return
-    }
-
-     */
     //Eirik 20.03.25: Replacement using androidx.media3
+    @UnstableApi
     override fun getSessionId(listener: (Int) -> Unit) {
-        val id = mediaPlayer?.audioSessionId?.takeIf { it != AUDIO_SESSION_ID_UNSET }
+        //val id = mediaPlayer?.audioSessionId?.takeIf { it != AUDIO_SESSION_ID_UNSET }
+        val id = exoPlayerInstance?.audioSessionId?.takeIf { it != AUDIO_SESSION_ID_UNSET } // Use exoPlayerInstance
         if (id != null) {
             listener(id)
         } else {
             val playerListener = object : androidx.media3.common.Player.Listener {
                 override fun onAudioAttributesChanged(audioAttributes: androidx.media3.common.AudioAttributes) {
-                    val id = mediaPlayer?.audioSessionId
+                    //val id = mediaPlayer?.audioSessionId
+                    val id = exoPlayerInstance?.audioSessionId // Use exoPlayerInstance
                     if (id != null && id != AUDIO_SESSION_ID_UNSET) {
                         listener(id)
-                        mediaPlayer?.removeListener(this)
+                        //mediaPlayer?.removeListener(this)
+                        exoPlayerInstance?.removeListener(this) // Use exoPlayerInstance
                     }
                 }
             }
-            mediaPlayer?.addListener(playerListener)
+            //mediaPlayer?.addListener(playerListener)
+            exoPlayerInstance?.addListener(playerListener) // Use exoPlayerInstance
         }
     }
 }

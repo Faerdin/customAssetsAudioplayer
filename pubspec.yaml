@@ -2,19 +2,21 @@ name: assets_audio_player
 description: Play music/audio stored in assets files directly from Flutter & Network, Radio, LiveStream, Local files. Compatible with Android, iOS, web and macOS.
 version: 4.0.0
 
-author: Florent Champigny <champigny.florent@gmail.com>
 homepage: https://github.com/florent37/Flutter-AssetsAudioPlayer
 
 environment:
   sdk: '>=2.19.0 <4.0.0'
   flutter: '>=3.3.0'
+  #flutter: ^3.0.0
 
 dependencies:
   flutter:
     sdk: flutter
-  rxdart: ^0.27.7
+  rxdart: ^0.28.0
   uuid: ">=3.0.7 <5.0.0"
+  #uuid: ^4.0.0
   http: ">=0.13.0 <2.0.0" # to download / cache network files
+  #http: ^1.0.0 # to download / cache network files
   path_provider: ^2.0.8 # removed this because it cancel flutter/android/ios on pub.dev path_provider: ^1.6.10
 
 
@@ -29,23 +31,27 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.2
+  #Eirik 15.05.25: Downgraded Flutter from 3.29.2 to 3.22.2 due to error in Flutter version
+  #Flutter version 3.22.2 is pinned to Dart 3.4.3. flutter_lints require Dart 3.5.0 or higher
+  #Work-around: Downgraded flutter_lints from 5.0.0 to 2.0.0
+  #flutter_lints: ^5.0.0
+  flutter_lints: ^2.0.0
 
 flutter:
   plugin:
-        platforms:
-          android:
-            package: com.github.florent37.assets_audio_player
-    #        #package: .\assets_audio_player
-            pluginClass: AssetsAudioPlayerPlugin
-    #        mainClass: AssetsAudioPlayerPlugin
-          ios:
-            pluginClass: AssetsAudioPlayerPlugin
-    #      macos:
-    #        pluginClass: AssetsAudioPlayerPlugin
-#      web:
-#        default_package: assets_audio_player_web
-      # moved to assets_audio_player_web
-      # web:
-      #  pluginClass: AssetsAudioPlayerPlugin
-      #  fileName: assets_audio_player_web.dart
+    platforms:
+      android:
+        package: com.github.florent37.assets_audio_player
+        #package: .\assets_audio_player
+        pluginClass: AssetsAudioPlayerPlugin
+        #mainClass: AssetsAudioPlayerPlugin
+      ios:
+        pluginClass: AssetsAudioPlayerPlugin
+      #macos:
+        #pluginClass: AssetsAudioPlayerPlugin
+      #web:
+        #default_package: assets_audio_player_web
+      #moved to assets_audio_player_web
+      #web:
+        #pluginClass: AssetsAudioPlayerPlugin
+        #fileName: assets_audio_player_web.dart

@@ -1,4 +1,43 @@
 ## 4.0.0
+
+Release Date: 2025.05.30
+
+Changelog:
+
+Added example code.
+
+Core Player Functionality & Media3 Migration:
+  •	Migrated to Media3 Library: The player implementation has been significantly refactored to use the androidx.media3 library, replacing the older androidx.media (MediaCompat) components. This is a major update that brings in the latest features and best practices for media playback on Android.
+    o	MediaSessionCompat has been replaced with androidx.media3.session.MediaSession.
+    o	MediaControllerCompat and PlaybackStateCompat usages are likely replaced by their Media3 equivalents (e.g., androidx.media3.session.MediaController, androidx.media3.common.Player.STATE_*).
+  •	New Player Interface Implementation: A large number of methods from a Player interface (likely androidx.media3.common.Player) have been implemented. These methods delegate calls to an internal mediaPlayer instance (presumably an ExoPlayer instance or similar Media3 player). This includes methods for:
+    o	Managing video surfaces (setVideoSurfaceHolder, clearVideoSurfaceHolder, setVideoSurfaceView, etc.)
+    o	Retrieving video information (getVideoSize, getSurfaceSize)
+    o	Handling cues (getCurrentCues)
+    o	Device information and volume control (getDeviceInfo, getDeviceVolume, isDeviceMuted, setDeviceVolume, increaseDeviceVolume, decreaseDeviceVolume, setDeviceMuted)
+    o	Setting audio attributes (setAudioAttributes)
+
+Notification and Media Button Handling:
+  •	Updated CustomMediaButtonReceiver:
+    o	The onReceive method in CustomMediaButtonReceiver now explicitly calls super.onReceive(context, intent). This ensures that media button events are correctly processed by the Media3 framework, especially when a MediaSession is active.
+    o	There's commented-out code suggesting exploration of Media3's MediaSession.ControllerInfo in onReceive, indicating ongoing refinement of media button handling with the new library.
+  •	Refactored MediaButtonsReceiver:
+    o	This class now utilizes androidx.media3.session.MediaSession instead of MediaSessionCompat.
+    o	It initializes and retrieves a MediaSession instance (likely backed by an ExoPlayer instance).
+    o	The mediaSessionCallback is now an implementation of androidx.media3.session.MediaSession.Callback.
+    o	The onMediaButtonEvent in the callback is updated to the new signature and correctly delegates to instance?.onIntentReceive(intent).
+    o	Dependencies on the older Android Support library for media have been removed.
+    o	The class is marked with @androidx.media3.common.util.UnstableApi, indicating use of APIs that might change in future Media3 versions.General Observations:
+  •	Modernization: The changes clearly indicate a move towards modern Android development practices by adopting the Jetpack Media3 library.
+  •	Enhanced Control: The newly implemented Player methods provide a more comprehensive API for controlling media playback and interacting with device features.
+•	Robustness: The updates to media button handling aim to improve the reliability and integration with the Android media system.
+
+Potential Areas for Further Detail (if applicable):
+  •	Specific changes to how audio focus is handled.
+  •	Modifications to error handling or player state management beyond what's directly visible in the overridden methods.
+  •	Changes to the public API of the assets_audio_player plugin if this is part of a Flutter plugin.
+
+
 Release Date: 2025.03.20
 
 Summary

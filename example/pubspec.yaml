@@ -1,0 +1,40 @@
+name: example
+description: "Example app for assets_audio_player"
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  #Eirik 15.05.25: Downgraded Flutter from 3.29.2 to 3.22.2 due to error in Flutter version
+  #Flutter version 3.22.2 is pinned to Dart 3.4.3.
+  #Work-around: Changed sdk dependency.
+  sdk: '>=3.0.0 <3.5.0'
+  flutter: '>=3.10.0'
+  #sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  assets_audio_player:
+    path: ../
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # The "flutter_lints" package below contains a set of recommended lints to
+  # encourage good coding practices. The lint set provided by the package is
+  # activated in the `analysis_options.yaml` file located at the root of your
+  # package. See that file for information about deactivating specific lint
+  # rules and activating additional ones.
+  
+  #Eirik 15.05.25: Downgraded Flutter from 3.29.2 to 3.22.2 due to error in Flutter version
+  #Flutter version 3.22.2 is pinned to Dart 3.4.3. flutter_lints require Dart 3.5.0 or higher
+  #Work-around: Downgraded flutter_lints from 5.0.0 to 2.0.0
+  #flutter_lints: ^5.0.0
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
